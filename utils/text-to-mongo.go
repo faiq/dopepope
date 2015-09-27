@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"strings"
 )
 
 func readLines(filename string) ([]string, error) {
@@ -33,59 +32,22 @@ func readLines(filename string) ([]string, error) {
 	return lines, nil
 }
 
-func delimitLines(lines []string) {
+func cleanLines(lines []string) []string {
 	var ret []string
-	terminals := []string{"?", ".", "!"}
-	lineEnded := false
-	lastLine := ""
-	fmt.Printf("%d ", len(lines))
-LineLoop:
-	for i, line := range lines {
-		for i, terminal := range terminals {
-			// if the last line didnt end a sentence
-			// add that on to the lastLine string
-			if lineEnded == false && lastLine != "" {
-				if term := strings.Index(line, terminal); term > 0 {
-					lastLine = strings.Join([]string{lastLine, line[:term+1]}, " ")
-					ret = append(ret, lastLine)
-					line = line[term+1:]
-					lineEnded = true
-					continue LineLoop
-				} else {
-					if i == len(terminals)-1 {
-						lastLine = strings.Join([]string{lastLine, line[:term+1]}, " ")
-					}
-					// try with another delim
-				}
-			}
-			if term := strings.Index(line, terminal); term > 0 {
-				ret = append(ret, line[:term+1])
-				line = line[term+1:]
-				lineEnded = true
-				continue LineLoop
-			} else {
-				// so we didnt find a delimeter this time around if its the last time we should make lastLine, line
-				if i == len(terminals)-1 {
-					lastLine = line
-					lineEnded = false
-				}
-			}
+	for _, line := range lines {
+		if len(line) > 4 {
+			ret = append(ret, line)
 		}
 	}
+	return ret
 }
 
 func main() {
-	files, err := ioutil.ReadDir("../speeches")
+	fileName := "../speeches/final.txt"
+	lines, err := readLines(fileName)
 	if err != nil {
-		fmt.Printf("err reading dir")
+		fmt.Println(err)
 	}
-	for _, f := range files {
-		fileName := fmt.Sprintf("../speeches/%s", f.Name())
-		lines, err := readLines(fileName)
-		fmt.Printf("%v", lines)
-		if err != nil {
-			fmt.Println(err)
-		}
-		delimitLines(lines)
-	}
+	finalLines := cleanLines(lines)
+	fmt.Printf("%v", finalLines)
 }
