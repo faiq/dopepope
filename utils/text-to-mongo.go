@@ -51,10 +51,9 @@ func cleanLinesAndSave(lines []string) error {
 	}
 	defer sess.Close()
 	if err != nil {
-		//log.Fatalf("CreateSession: %s\n", err)
 		return err
 	}
-	c := sess.DB("dopepope").C("sentencestest")
+	c := sess.DB("dopepope").C("sentences")
 	for _, line := range lines {
 		lastIndex := strings.LastIndex(line, " ")
 		if lastIndex == -1 {
