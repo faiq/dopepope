@@ -3,9 +3,19 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 	"io"
 	"io/ioutil"
+	"os"
+	"strings"
 )
+
+type Sentence struct {
+	Id       bson.ObjectId `bson:"_id,omitempty"`
+	LastWord string        `bson:"lastWord"`
+	Sentence string        `bson:"sentence"`
+}
 
 func readLines(filename string) ([]string, error) {
 	var lines []string
@@ -32,14 +42,35 @@ func readLines(filename string) ([]string, error) {
 	return lines, nil
 }
 
-func cleanLines(lines []string) []string {
-	var ret []string
+func cleanLinesAndSave(lines []string) error {
+	uri := "mongodb://localhost/"
+	sess, err := mgo.Dial(uri)
+	if err != nil {
+		fmt.Printf("Can't connect to mongo, go error %v\n", err)
+		os.Exit(1)
+	}
+	defer sess.Close()
+	if err != nil {
+		//log.Fatalf("CreateSession: %s\n", err)
+		return err
+	}
+	c := sess.DB("dopepope").C("sentencestest")
 	for _, line := range lines {
-		if len(line) > 4 {
-			ret = append(ret, line)
+		lastIndex := strings.LastIndex(line, " ")
+		if lastIndex == -1 {
+			continue
+		}
+		lastWord := line[lastIndex+1 : len(line)-2]
+		lastWord = strings.ToLower(lastWord)
+		if len(lastWord) > 2 && strings.ContainsAny(lastWord, "a & b & c &d &e & f &g & h & i &j & k & l & m & n & o & p & q & r & s & t & u & v & w & x & y & z") {
+			line = strings.TrimSpace(line)
+			err = c.Insert(&Sentence{bson.NewObjectId(), lastWord, line})
+			if err != nil {
+				return err
+			}
 		}
 	}
-	return ret
+	return nil
 }
 
 func main() {
@@ -48,6 +79,8 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 	}
-	finalLines := cleanLines(lines)
-	fmt.Printf("%v", finalLines)
+	err = cleanLinesAndSave(lines)
+	if err != nil {
+		fmt.Println(err)
+	}
 }
