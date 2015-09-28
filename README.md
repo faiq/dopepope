@@ -12,7 +12,7 @@ the pope wants to drop a :fire: mixtape but doesn't have the time here's where I
 # How to Drop the :fire: tape
 This application takes a bunch of speeches that the pope made, sanitized by using sed, populates them into mongoDB in an object which takes the last word of each sentence and the sentence itself.
 
-If you want to do this
+If you want to do this (you only need to do this once)
 1. run `mongod`
 2. (hack) change the package name of `populate/text-to-mongo.go` from `populate` to `main`
 3. from the project root `go run populate/text-to-mongo.go`
@@ -31,6 +31,8 @@ If you want to put some :fire: over a beat run (we use in da club as an example 
 2. run `fmpeg -i output.mp3 -i indaclub.mp3 -filter_complex amerge -c:a libmp3lame -q:a 4 ~/Desktop/dopepope.mp3`
 
 Its a long serious of steps, but if everything worked right you should have a :fire: song called `dopepope.mp3` on your desktop!
+
+An example of one can be found in this directory called `dopepope.mp3`
 
 Open a new issue or pull request if you want to help! 
 
