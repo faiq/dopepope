@@ -8,6 +8,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -73,7 +74,9 @@ func cleanLinesAndSave(lines []string) error {
 }
 
 func main() {
-	fileName := "../speeches/final.txt"
+	pwd, _ := os.Getwd()
+	fileName := pwd + "/speeches/final.txt"
+	fileName, _ = filepath.Abs(fileName)
 	lines, err := readLines(fileName)
 	if err != nil {
 		fmt.Println(err)

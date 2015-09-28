@@ -5,6 +5,8 @@ import (
 	"flag"
 	"fmt"
 	"github.com/faiq/dopepope/populate"
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 	"io"
 	"io/ioutil"
 	"log"
@@ -66,7 +68,7 @@ func MakeRequest(mainWait *sync.WaitGroup, term string) ([]string, error) {
 		close(updates)
 	}()
 	for result := range updates {
-		fire = append(fire, result.populate.Sentence)
+		fire = append(fire, result.Sentence)
 	}
 	// Wait for all the queries to complete.
 	return fire, nil
@@ -117,7 +119,7 @@ func main() {
 	}
 
 	for _, fireline := range fire {
-		n, err := io.WriteString(file, fireline)
+		n, err := io.WriteString(file, fireline+"\n")
 		if err != nil {
 			fmt.Println(n, err)
 		}
