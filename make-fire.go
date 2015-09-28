@@ -4,8 +4,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
+	"github.com/faiq/dopepope/populate"
 	"io"
 	"io/ioutil"
 	"log"
@@ -15,11 +14,6 @@ import (
 	"time"
 )
 
-type Sentence struct {
-	Id       bson.ObjectId `bson:"_id,omitempty"`
-	LastWord string        `bson:"lastWord"`
-	Sentence string        `bson:"sentence"`
-}
 type Rhyme struct {
 	Word      string `json:"word"`
 	Freq      int    `json:"freq"`
@@ -59,7 +53,7 @@ func MakeRequest(mainWait *sync.WaitGroup, term string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	updates := make(chan Sentence)
+	updates := make(chan populate.Sentence)
 	var chanWait sync.WaitGroup
 	for _, word := range Rhymes {
 		time.Sleep(time.Millisecond * 600)
@@ -72,13 +66,13 @@ func MakeRequest(mainWait *sync.WaitGroup, term string) ([]string, error) {
 		close(updates)
 	}()
 	for result := range updates {
-		fire = append(fire, result.Sentence)
+		fire = append(fire, result.populate.Sentence)
 	}
 	// Wait for all the queries to complete.
 	return fire, nil
 }
 
-func RunQuery(query string, sendUpdates chan<- Sentence, mongoSession *mgo.Session, waitGroup *sync.WaitGroup) {
+func RunQuery(query string, sendUpdates chan<- populate.Sentence, mongoSession *mgo.Session, waitGroup *sync.WaitGroup) {
 	// Decrement the wait group count so the program knows this
 	// has been completed once the goroutine exits.
 
@@ -93,7 +87,7 @@ func RunQuery(query string, sendUpdates chan<- Sentence, mongoSession *mgo.Sessi
 	collection := sessionCopy.DB("dopepope").C("sentencestest")
 
 	log.Printf("RunQuery : %d : Executing\n", query)
-	var result Sentence
+	var result populate.Sentence
 	err := collection.Find(bson.M{"lastWord": query}).One(&result)
 	time.Sleep(time.Second * 5)
 	if err != nil {
