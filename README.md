@@ -7,7 +7,7 @@ the pope wants to drop a :fire: mixtape but doesn't have the time here's where I
 2. ffmpeg 2.5.2 `brew install ffmpeg` if you have OSX
 3. mongoDB v2.4.9 or greater...probably
 4. python versoin 2.7 
-5. [https://github.com/pndurette/gTTS] (gTTs) (google text to speech cli) `pip install gTTS`
+5. [gTTs] (https://github.com/faiq/dopepope) `pip install gTTS`
 
 # How to Drop the :fire: tape
 This application takes a bunch of speeches that the pope made, sanitized by using sed, populates them into mongoDB in an object which takes the last word of each sentence and the sentence itself.
