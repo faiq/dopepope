@@ -54,10 +54,17 @@ func MakeRequest(mainWait *sync.WaitGroup, term string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	updates := make(chan populate.Sentence, len(Rhymes))
+	updates := make(chan populate.Sentence)
 	throttle := make(chan int, maxConcurrency)
 	var chanWait sync.WaitGroup
 	chanWait.Add(len(Rhymes))
+	go func() {
+		for result := range updates {
+			if result.Sentence != "" {
+				fire = append(fire, result.Sentence)
+			}
+		}
+	}()
 	for _, word := range Rhymes {
 		throttle <- 1
 		go RunQuery(word.Word, updates, sess, &chanWait, throttle)
@@ -65,11 +72,6 @@ func MakeRequest(mainWait *sync.WaitGroup, term string) ([]string, error) {
 	chanWait.Wait()
 	close(updates)
 	close(throttle)
-	for result := range updates {
-		if result.Sentence != "" {
-			fire = append(fire, result.Sentence)
-		}
-	}
 	return fire, nil
 }
 
