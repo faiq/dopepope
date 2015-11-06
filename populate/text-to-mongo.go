@@ -62,7 +62,7 @@ func cleanLinesAndSave(lines []string) error {
 		}
 		lastWord := line[lastIndex+1 : len(line)-2]
 		lastWord = strings.ToLower(lastWord)
-		if len(lastWord) > 2 && strings.ContainsAny(lastWord, "a & b & c &d &e & f &g & h & i &j & k & l & m & n & o & p & q & r & s & t & u & v & w & x & y & z") {
+		if len(lastWord) > 2 && strings.ContainsAny(lastWord, "a b c d e f g h i j k l m n o p q r s t u v w x y z") {
 			line = strings.TrimSpace(line)
 			err = c.Insert(&Sentence{bson.NewObjectId(), lastWord, line})
 			if err != nil {
