@@ -9,11 +9,9 @@ import (
 	"gopkg.in/mgo.v2/bson"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"sync"
-	"time"
 )
 
 type Rhyme struct {
@@ -24,7 +22,7 @@ type Rhyme struct {
 	Syllables string `json:"syllables"`
 }
 
-const url = "http://rhymebrain.com/talk?function=getRhymes&maxResults=30&word="
+const url = "http://rhymebrain.com/talk?function=getRhymes&maxResults=50&word="
 
 var fireFlag string
 
@@ -58,19 +56,19 @@ func MakeRequest(mainWait *sync.WaitGroup, term string) ([]string, error) {
 	updates := make(chan populate.Sentence)
 	var chanWait sync.WaitGroup
 	for _, word := range Rhymes {
-		time.Sleep(time.Millisecond * 600)
 		chanWait.Add(1)
 		go RunQuery(word.Word, updates, sess, &chanWait)
 	}
-
+	// Wait for all the queries to complete.
 	go func() {
 		chanWait.Wait()
 		close(updates)
 	}()
 	for result := range updates {
-		fire = append(fire, result.Sentence)
+		if result.Sentence != "" {
+			fire = append(fire, result.Sentence)
+		}
 	}
-	// Wait for all the queries to complete.
 	return fire, nil
 }
 
@@ -81,23 +79,17 @@ func RunQuery(query string, sendUpdates chan<- populate.Sentence, mongoSession *
 	// Request a socket connection from the session to process our query.
 	// Close the session when the goroutine exits and put the connection back
 	// into the pool.
+	defer waitGroup.Done()
 	sessionCopy := mongoSession.Copy()
 	defer sessionCopy.Close()
-	defer waitGroup.Done()
-
 	// Get a collection to execute the query against.
 	collection := sessionCopy.DB("dopepope").C("sentencestest")
-
-	log.Printf("RunQuery : %d : Executing\n", query)
 	var result populate.Sentence
 	err := collection.Find(bson.M{"lastWord": query}).One(&result)
-	time.Sleep(time.Second * 5)
 	if err != nil {
-		log.Printf("RunQuery : ERROR : %s\n", err)
-		return
+		fmt.Println(err)
 	}
 	sendUpdates <- result
-
 }
 
 func main() {
@@ -108,7 +100,7 @@ func main() {
 	fire, err := MakeRequest(&wait, fireFlag)
 	wait.Wait()
 	if err != nil {
-		fmt.Printf("I hope this doesnt break at the demo............")
+		fmt.Printf("%v \n", err)
 	}
 	filename := "output.txt"
 
