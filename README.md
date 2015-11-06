@@ -33,7 +33,7 @@ If you want to put some :fire: over a beat run (we use in da club as an example 
 1. run `gtts-cli.py -f output.txt -l 'en' output.mp3`
 2. run `fmpeg -i output.mp3 -i indaclub.mp3 -filter_complex amerge -c:a libmp3lame -q:a 4 ~/Desktop/dopepope.mp3`
 
-Its a long serious of steps, but if everything worked right you should have a :fire: song called `dopepope.mp3` on your desktop!
+Its a long series of steps, but if everything worked right you should have a :fire: song called `dopepope.mp3` on your desktop!
 
 An example of one can be found in this directory called `dopepope.mp3`
 
