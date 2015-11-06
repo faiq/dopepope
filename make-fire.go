@@ -23,6 +23,7 @@ type Rhyme struct {
 }
 
 const url = "http://rhymebrain.com/talk?function=getRhymes&maxResults=50&word="
+const maxConcurrency = 5
 
 var fireFlag string
 
@@ -53,17 +54,17 @@ func MakeRequest(mainWait *sync.WaitGroup, term string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	updates := make(chan populate.Sentence)
+	updates := make(chan populate.Sentence, len(Rhymes))
+	throttle := make(chan int, maxConcurrency)
 	var chanWait sync.WaitGroup
+	chanWait.Add(len(Rhymes))
 	for _, word := range Rhymes {
-		chanWait.Add(1)
-		go RunQuery(word.Word, updates, sess, &chanWait)
+		throttle <- 1
+		go RunQuery(word.Word, updates, sess, &chanWait, throttle)
 	}
-	// Wait for all the queries to complete.
-	go func() {
-		chanWait.Wait()
-		close(updates)
-	}()
+	chanWait.Wait()
+	close(updates)
+	close(throttle)
 	for result := range updates {
 		if result.Sentence != "" {
 			fire = append(fire, result.Sentence)
@@ -72,22 +73,26 @@ func MakeRequest(mainWait *sync.WaitGroup, term string) ([]string, error) {
 	return fire, nil
 }
 
-func RunQuery(query string, sendUpdates chan<- populate.Sentence, mongoSession *mgo.Session, waitGroup *sync.WaitGroup) {
+func RunQuery(query string, sendUpdates chan<- populate.Sentence, mongoSession *mgo.Session, waitGroup *sync.WaitGroup, throttle chan int) {
 	// Decrement the wait group count so the program knows this
 	// has been completed once the goroutine exits.
 
 	// Request a socket connection from the session to process our query.
 	// Close the session when the goroutine exits and put the connection back
 	// into the pool.
-	defer waitGroup.Done()
 	sessionCopy := mongoSession.Copy()
 	defer sessionCopy.Close()
+	defer func() {
+		<-throttle
+		waitGroup.Done()
+	}()
 	// Get a collection to execute the query against.
 	collection := sessionCopy.DB("dopepope").C("sentencestest")
 	var result populate.Sentence
 	err := collection.Find(bson.M{"lastWord": query}).One(&result)
-	if err != nil {
-		fmt.Println(err)
+	if err != nil && err != mgo.ErrNotFound {
+		fmt.Printf("%v \n", err)
+		<-throttle
 	}
 	sendUpdates <- result
 }
