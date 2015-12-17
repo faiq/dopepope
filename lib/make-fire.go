@@ -1,4 +1,4 @@
-package main
+package lib
 
 import (
 	"encoding/json"
@@ -23,7 +23,7 @@ type Rhyme struct {
 }
 
 const url = "http://rhymebrain.com/talk?function=getRhymes&maxResults=50&word="
-const maxConcurrency = 5
+const MAXCONCURRENCY = 5
 
 var fireFlag string
 
@@ -55,7 +55,7 @@ func MakeRequest(mainWait *sync.WaitGroup, term string) ([]string, error) {
 		return nil, err
 	}
 	updates := make(chan populate.Sentence)
-	throttle := make(chan int, maxConcurrency)
+	throttle := make(chan int, MAXCONCURRENCY)
 	var chanWait sync.WaitGroup
 	chanWait.Add(len(Rhymes))
 	go func() {
