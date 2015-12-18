@@ -32,7 +32,7 @@ func allRoutes(db *mgo.Session) []Route {
 	}
 
 	home := Route{
-		Handler: handlers.Home,
+		Handler: http.FileServer(http.Dir("./public")),
 		Name:    "home",
 		Methods: "GET",
 		Path:    "/",
