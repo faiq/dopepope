@@ -1,34 +1,22 @@
 {
-  "name": "frontend-src",
+  "name": "dopepope",
   "version": "1.0.0",
-  "description": "dopepope frontend",
-  "main": "index.js",
-  "browserify": {
-    "transform": [
-      "babelify",
-      "scssify"
-    ]
-  },
-  "scripts": {
-    "build": "browserify app.js >> ../public/bundle.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "github.com/faiq/dopepope"
-  },
+  "description": "this is cancer",
   "author": "faiq",
-  "license": "ISC",
-  "dependencies": {
-    "react": "^0.14.3",
-    "react-dom": "^0.14.3",
-    "react-tools": "^0.13.3"
+  "license": "MIT",
+  "scripts": {
+    "start": "budo app.js --port 8000 --serve bundle.js --dir ../public  --debug --  -t babelify -p browserify-hmr"
   },
   "devDependencies": {
-    "babel-preset-es2015": "^6.3.13",
-    "babel-preset-react": "^6.3.13",
-    "babelify": "^7.2.0",
+    "babel-plugin-react-transform": "^1.1.1",
+    "babelify": "^6.4.0",
     "browserify": "^12.0.1",
-    "react-transform": "0.0.3",
-    "scssify": "^0.3.6"
+    "browserify-hmr": "^0.3.1",
+    "budo": "^7.1.0",
+    "react-transform-hmr": "^1.0.1"
+  },
+  "dependencies": {
+    "react": "^0.14.3",
+    "react-dom": "^0.14.3"
   }
 }
