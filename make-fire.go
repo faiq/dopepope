@@ -4,14 +4,15 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/faiq/dopepope/populate"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"sync"
+
+	"github.com/faiq/dopepope-populate/populate"
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 type Rhyme struct {
@@ -45,7 +46,7 @@ func MakeRequest(mainWait *sync.WaitGroup, term string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	uri := "mongodb://localhost/"
+	uri := "mongodb://127.0.0.1:27017"
 	sess, err := mgo.Dial(uri)
 	if err != nil {
 		return nil, err
@@ -89,7 +90,7 @@ func RunQuery(query string, sendUpdates chan<- populate.Sentence, mongoSession *
 		waitGroup.Done()
 	}()
 	// Get a collection to execute the query against.
-	collection := sessionCopy.DB("dopepope").C("sentencestest")
+	collection := sessionCopy.DB("dopepope").C("sentences")
 	var result populate.Sentence
 	err := collection.Find(bson.M{"lastWord": query}).One(&result)
 	if err != nil && err != mgo.ErrNotFound {

@@ -1,0 +1,47 @@
+box:
+  id: faiq/dopepope-populate
+  volumes: /Users/faiq/mongo:/data/db
+  username: $DOCKER_USER
+  password: $DOCKER_PASSWORD
+build:
+  steps:
+    - script:
+        code: |
+          sudo apt-get -y install software-properties-common
+          sudo apt-get -y install python-software-properties
+          sudo add-apt-repository ppa:mc3man/trusty-media
+          sudo apt-get -y install python-setuptools python-dev build-essential
+          sudo easy_install pip
+          #sudo apt-get update
+          #sudo apt-get dist-upgrade
+          sudo pip install gTTS
+          sudo apt-get -y install ffmpeg
+    - script:
+        code: |
+          export PATH=$PATH:/usr/local/go/bin
+          cd $HOME
+          mkdir -p gocode/src
+          export GOPATH=$HOME/gocode
+    - setup-go-workspace:
+        package-dir: github.com/faiq/dopepope
+    - script:
+        name: glide install
+        code: |
+          export GO15VENDOREXPERIMENT=1
+          export GLIDE_VERSION=0.9.1
+          curl -LO https://github.com/Masterminds/glide/releases/download/${GLIDE_VERSION}/glide-${GLIDE_VERSION}-linux-amd64.tar.gz
+          tar -xvzf glide-${GLIDE_VERSION}-linux-amd64.tar.gz
+          cp linux-amd64/glide /bin/glide
+          glide install
+    - script:
+      code: |
+        go build
+        cp dopepope /
+        cp run.sh /
+        cp indaclub.mp3 /
+    - internal/docker-push:
+        username: $DOCKER_USER
+        password: $DOCKER_PASSWORD
+        repository: faiq/dopepope
+        tag: latest
+        cmd: ./run.sh
